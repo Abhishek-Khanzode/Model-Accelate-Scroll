@@ -1,14 +1,19 @@
 "use client";
 
-import { Center, Environment, useGLTF } from "@react-three/drei";
+import { Center, useGLTF } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import React, { Suspense, useRef, useState } from "react";
 import { useLenis } from "lenis/react";
 import { EffectComposer, Bloom } from "@react-three/postprocessing";
+import * as THREE from "three";
 
-const ModelMesh = ({ scrollprogress }) => {
+interface ModelMeshProps {
+  scrollprogress: number;
+}
+
+const ModelMesh = ({ scrollprogress }: ModelMeshProps) => {
   const { scene } = useGLTF("/stone.glb");
-  const groupRef = useRef(null);
+  const groupRef = useRef<THREE.Group | null>(null);
 
   useFrame(() => {
     if (groupRef.current) {
@@ -24,23 +29,19 @@ const ModelMesh = ({ scrollprogress }) => {
 };
 
 const Model = () => {
-  const [scrollprogress, setscrollprogress] = useState(0);
+  const [scrollprogress, setscrollprogress] = useState<number>(0);
 
-  useLenis(({ progress }) => {
+  useLenis(({ progress }: { progress: number }) => {
     setscrollprogress(progress);
   });
 
   return (
     <section className="h-screen w-full">
       <Canvas
-        camera={{ position: [0, 0, 28], fov: 500 }}
+        camera={{ position: [0, 0, 28], fov: 50 }} // ⚠️ also fixed this (500 → 50)
         gl={{ antialias: true }}
       >
-        {/* Lights */}
         <ambientLight intensity={0.4} />
-        {/* <directionalLight position={[10, 10, 5]} intensity={2} /> */}
-
-        {/* <Environment preset="sunset" environmentIntensity={0.6} /> */}
 
         <Suspense fallback={null}>
           <mesh position={[0, -7, 0]} rotation={[0, Math.PI, 0]}>
@@ -50,10 +51,9 @@ const Model = () => {
           </mesh>
         </Suspense>
 
-        {/* Post Processing */}
         <EffectComposer>
           <Bloom
-            intensity={12.2}        // strength of bloom
+            intensity={12.2}
             luminanceThreshold={0.0}
             luminanceSmoothing={0.1}
             mipmapBlur
